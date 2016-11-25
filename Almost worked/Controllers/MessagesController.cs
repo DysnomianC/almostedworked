@@ -87,8 +87,22 @@ namespace Almost_worked
                 //the above if returns
 
                 string replyStr = "";
-
-                if (userText.ToLower().Contains("my name is"))
+                if (userText.ToLower().Contains("help"))
+                {
+                    replyStr += "HAVE HELPS\n\n";
+                    replyStr += "Use \"my name is YOUR NAME\" to set your name (does not support spaces).\n\n" +
+                        "Use \"actually it's YOUR NAME\" to update your name.\n\n\n" +
+                        "Use \"whoami\" to check what your name is.\n\n" +
+                        "Use \"list accounts\" to see all our available accounts.\n\n\n" +
+                        "Use \"set currency ###\" where ### is the 3 letter currency code (eg. NZD) to set your currency (for use with exchange rates).\n\n" +
+                        "Use \"exchange rates\" to get the conversion between your currency and other common currencies.\n\n" +
+                        "Use \"full exchange rates\" to get the conversion between your currency and ALL other currencies.\n\n" +
+                        "Use \"clear all\" to clear all data associated to you.\n\n" +
+                        "Use \"get timelines\" to see the past exchange rates requests.\n\n" +
+                        "Use \"delete timeline N\" to delete the exchange rate request with id = N.\n\n" +
+                        "Finally, use \"help\" to view this help.";
+                }
+                else if (userText.ToLower().Contains("my name is"))
                 {
                     int index = userText.IndexOf("my name is");
                     //first remove everyhing before "my name is", then remove "my name is", the remove spaces.
@@ -231,6 +245,16 @@ namespace Almost_worked
                         await AzureManager.AzureManagerInstance.AddTimeline(newTimeline);
 
                         replyStr += $"Also, the settings for your request were saved to the database:[{newTimeline.Date}]";
+                    }
+                }
+
+                else if (activity.Text.ToLower().Contains("get timeline"))
+                {
+                    replyStr += "";
+                    List<Timeline> timelines = await AzureManager.AzureManagerInstance.GetTimelines();
+                    foreach (Timeline t in timelines)
+                    {
+                        replyStr += "[" + t.Date + "] Base Currency " + t.BaseCurrency + ", Was Full? " + t.Full + "\n\n";
                     }
                 }
 
