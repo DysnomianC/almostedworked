@@ -87,6 +87,9 @@ namespace Almost_worked
                 //the above if returns
 
                 string replyStr = "";
+                /* the follow is a large if ... elseif ... block, where each segment changes replyStr, which is used 
+                 * at the end to actually create the reply.
+                 */
                 if (userText.ToLower().Contains("help"))
                 {
                     replyStr += "HAVE HELPS\n\n";
@@ -99,7 +102,7 @@ namespace Almost_worked
                         "Use \"full exchange rates\" to get the conversion between your currency and ALL other currencies.\n\n" +
                         "Use \"clear all\" to clear all data associated to you.\n\n" +
                         "Use \"get timelines\" to see the past exchange rates requests.\n\n" +
-                        "Use \"delete timeline N\" to delete the exchange rate request with id = N.\n\n" +
+                        "Use \"delete timeline UID\" to delete the exchange rate request with unique id UID (eg 5cd5b064-0b0f-432d-9c23-0aff93c7cfe0).\n\n" +
                         "Finally, use \"help\" to view this help.";
                 }
                 else if (userText.ToLower().Contains("my name is"))
@@ -216,7 +219,7 @@ namespace Almost_worked
                     if (String.IsNullOrEmpty(prefCurrency))
                     {
                         //ask user to set their currency
-                        replyStr += $"To use exchange rates you must first set your exchange rate with \"set currency NZD\", once you've done that, try again :)\n\n";
+                        replyStr += $"To use exchange rates you must first set your exchange rate with \"set currency ###\", once you've done that, try again :)\n\n";
                     }
                     else
                     {
@@ -231,7 +234,7 @@ namespace Almost_worked
                         {
                             full = true;
                         }
-                        replyStr += $"Your current currency is {rootObject.@base}, to update it ask to \"set currency NZD\".\n\n";
+                        replyStr += $"Your current currency is {rootObject.@base}, to update it ask to \"set currency ###\".\n\n";
                         if (full) { replyStr += $"The full "; }
                         else { replyStr += $"The most common "; }
                         replyStr += $"exchange rates for 1 {rootObject.@base} are \n\n{rootObject.rates.getRates(full)}\n\n";
@@ -244,7 +247,9 @@ namespace Almost_worked
                         };
                         await AzureManager.AzureManagerInstance.AddTimeline(newTimeline);
 
-                        replyStr += $"Also, the settings for your request were saved to the database:[{newTimeline.Date}]";
+                        replyStr += $"Also, the settings for your request were saved to the database: \n\n" +
+                            $"[{newTimeline.Date}] Base Currency is {newTimeline.BaseCurrency}.  Want all currencies? {newTimeline.Full}.\n\n" +
+                            $"The unique id for this request is {newTimeline.ID}";
                     }
                 }
 
@@ -254,8 +259,26 @@ namespace Almost_worked
                     List<Timeline> timelines = await AzureManager.AzureManagerInstance.GetTimelines();
                     foreach (Timeline t in timelines)
                     {
-                        replyStr += "[" + t.Date + "] Base Currency " + t.BaseCurrency + ", Was Full? " + t.Full + "\n\n";
+                        replyStr += "[" + t.Date + "] Base Currency was " + t.BaseCurrency + ".  Wanted all currencies? " + t.Full + "\n\n";
                     }
+                }
+
+                else if (activity.Text.ToLower().Contains("del timeline"))
+                {
+                    int index = userText.IndexOf("del timeline");
+                    String uid = userText.Substring(index).Replace("del timelines", "").Replace("del timeline", "").Replace(" ", "");
+
+                    Timeline deleted = await AzureManager.AzureManagerInstance.DelTimeline(uid);
+                    if (deleted != null)
+                    {
+                        replyStr += $"The following timeline was succesfully deleted:\n\n" +
+                        $"[{deleted.Date}] Base Currency was {deleted.BaseCurrency}.  Wanted all currencies? {deleted.Full}.";
+                    }
+                    else
+                    {
+                        replyStr += $"The unique id {uid} could not be matched, sorry.";
+                    }
+                    
                 }
 
                 else if (activity.Text.ToLower().Contains("clear all"))

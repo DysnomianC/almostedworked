@@ -47,5 +47,19 @@ namespace Almost_worked
         {
             await this.timelineTable.InsertAsync(timeline);
         }
+
+        public async Task<Timeline> DelTimeline(String uid)
+        {
+            List<Timeline> timelines = await this.timelineTable.ToListAsync();
+            foreach (Timeline t in timelines)
+            {
+                if (t.ID.Equals(uid))
+                {
+                    await this.timelineTable.DeleteAsync(t);
+                    return t;
+                }
+            }
+            return null;
+        }
     }
 }
