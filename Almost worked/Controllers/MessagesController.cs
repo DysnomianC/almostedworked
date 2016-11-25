@@ -37,7 +37,7 @@ namespace Almost_worked
                 String userText = activity.Text;
 
                 /* testing cards - this is separate return from the rest of the messages */
-                if (userText.ToLower().Contains("help"))
+                if (userText.ToLower().Contains("info"))
                 {
                     Activity myReply = activity.CreateReply();
                     myReply.Recipient = activity.From;
@@ -57,18 +57,28 @@ namespace Almost_worked
                     };
                     cardButtons.Add(plButton);
                     */
-                    ThumbnailCard helpCard = new ThumbnailCard()
+
+                    List<CardImage> cardImages = new List<CardImage>();
+                    cardImages.Add(new CardImage(url: "http://fixer.io/img/money.png"));
+
+                    List<CardAction> cardButtons = new List<CardAction>();
+                    CardAction openBankBut = new CardAction()
                     {
-                        Title = "HAVE HELPS",
-                        Text = "Use \"my name is YOUR NAME\" to set your name (does not support spaces).\n\n\n" +
-                               "Use \"actually it's YOUR NAME\" to update your name.\n\n\n" +
-                               "Use \"list accounts\" to see all our available accounts.\n\n\n" +
-                               "Use \"help\" to view this help card."
-                        //Images = cardImages,
-                        //Buttons = cardButtons
+                        Value = "http://msa.ms/ContosoBank/",
+                        Type = "openUrl",
+                        Title = "Go to our website!"
+                    };
+                    cardButtons.Add(openBankBut);
+
+                    ThumbnailCard infoCard = new ThumbnailCard()
+                    {
+                        Title = "GET YOU SOME INFO",
+                        Text = "Click the button below to go to our website to get said info.",
+                        Images = cardImages,
+                        Buttons = cardButtons
                     };
 
-                    Attachment helpAttachment = helpCard.ToAttachment();
+                    Attachment helpAttachment = infoCard.ToAttachment();
                     myReply.Attachments.Add(helpAttachment);
                     await connector.Conversations.SendToConversationAsync(myReply);
 
@@ -210,14 +220,17 @@ namespace Almost_worked
                         replyStr += $"Your current currency is {rootObject.@base}, to update it ask to \"set currency NZD\".\n\n";
                         if (full) { replyStr += $"The full "; }
                         else { replyStr += $"The most common "; }
-                        replyStr += $"exchange rates for 1 {rootObject.@base} are \n\n{rootObject.rates.getRates(full)}";
+                        replyStr += $"exchange rates for 1 {rootObject.@base} are \n\n{rootObject.rates.getRates(full)}\n\n";
 
                         Timeline newTimeline = new Timeline()
                         {
-                            Date = rootObject.date,
+                            Date = DateTime.Now,
                             BaseCurrency = rootObject.@base,
                             Full = full,
                         };
+                        await AzureManager.AzureManagerInstance.AddTimeline(newTimeline);
+
+                        replyStr += $"Also, the settings for your request were saved to the database:[{newTimeline.Date}]";
                     }
                 }
 

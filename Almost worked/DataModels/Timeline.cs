@@ -16,7 +16,7 @@ namespace Almost_worked
         public string BaseCurrency { get; set; }
 
         [JsonProperty(PropertyName = "date")]
-        public string Date { get; set; }
+        public DateTime Date { get; set; }
 
         [JsonProperty(PropertyName = "full")]
         public bool Full { get; set; }
